@@ -22,7 +22,7 @@ The `couchhouse` application spools the changes from Cloudant into Clickhouse, w
 Create a Clickhouse database called `couchhouse`:
 
 ```sql
-CREATE DATABASE 'couchhouse'
+CREATE DATABASE IF NOT EXISTS couchhouse
 ```
 
 Then create a Clickhouse table in that database that matches the schema of your data e.g.
@@ -54,7 +54,9 @@ Note:
 - we use `LowCardinality(string)` for strings that contain few distinct values.
 - we use the `ReplacingMergeTree` database engine so that if the Cloudant changes feed _rewinds_, then the duplicate changes will be de-duped by Clickhouse.
 - the `PRIMARY KEY` is a combination of our device id and the time of the reading. The choice of primary key is the biggest decision to be made and the whys and wherefores of this process is beyond the scope of this document.
-- the `ORDER BY` is the `PRIMARY KEY` plus the document id at the end, which is required for deduping using the `ReplacingMergeTree`. (the `ORDER BY` must be a equal or a super-set of the `PRIMARY KEY`)
+- the `ORDER BY` is the `PRIMARY KEY` plus the document id at the end.
+
+> Note: the usual database engine would be `MergeTree` but we have to remember that a Cloudant changes find may _rewind_ (it is an _at least once_ delivery, not _only once_). If this were to happen, then a `MergeTree` would store the repeated rows as duplicates, potentially skewing our results. The `ReplacingMergeTree` allows updates to happen, using the `ORDER BY` value to decide which rows are duplicates - that is why we have appended the `id` to `ORDER BY` statement. If a changes feed does rewind, the items will be stored but the `ReplacingMergeTree` will recognise the repeats as dupes of earlier writes and ensure there is no double-counting in queries. Eventually the older writes will be cleaned up during a Clickhouse _merge_.
 
 ## Running
 
