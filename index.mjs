@@ -5,6 +5,9 @@ import { createClient } from '@clickhouse/client'
 import { writeFile } from 'node:fs/promises'
 import { readFile } from 'node:fs/promises'
 
+// URL of the Clickhouse service
+const CLICKHOUSE_URL= process.env.CLICKHOUSE_URL || 'http://127.0.0.1:8123'
+
 // the size of batches written to Clickhouse
 const BATCH_SIZE = 100
 
@@ -129,7 +132,7 @@ const main = async () => {
   // https://clickhouse.com/docs/en/integrations/language-clients/javascript#configuration
   // create a Clickhouse client
   ch = createClient({
-    url: 'http://127.0.0.1:8123'
+    url: CLICKHOUSE_URL
   })
 
   // create a cloudant-node-sdk client - configuration via env variables

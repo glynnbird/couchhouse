@@ -14,12 +14,30 @@ The `couchhouse` application spools the changes from Cloudant into Clickhouse, w
 ## Prerequisites
 
 1. A Cloudant instance hosting a database.
-2. A Clickhouse instance, and a Clickhouse client that can conntect to it.
+2. A Clickhouse instance, and a Clickhouse client that can connect to it.
 3. A machine capable of running `couchhouse` that can see and has permission to access (1) & (2).
+
+## Running Clickhouse locally
+
+Clickhouse can be installed on a Mac with `brew` or using the [installation instructions](https://clickhouse.com/docs/en/getting-started/quick-start).
+
+Run as a server with:
+
+```sh
+clickhouse server
+```
+
+which will stand up the server listening on `http://127.0.0.1:8123'.
+
+The client can be run with:
+
+```sh
+clickhouse client
+```
 
 ## Setting up the Clickhouse table
 
-Create a Clickhouse database called `couchhouse`:
+From a clickhouse client, create a Clickhouse database called `couchhouse`:
 
 ```sql
 CREATE DATABASE IF NOT EXISTS couchhouse
@@ -56,7 +74,7 @@ Note:
 - the `PRIMARY KEY` is a combination of our device id and the time of the reading. The choice of primary key is the biggest decision to be made and the whys and wherefores of this process is beyond the scope of this document.
 - the `ORDER BY` is the `PRIMARY KEY` plus the document id at the end.
 
-> Note: the usual database engine would be `MergeTree` but we have to remember that a Cloudant changes find may _rewind_ (it is an _at least once_ delivery, not _only once_). If this were to happen, then a `MergeTree` would store the repeated rows as duplicates, potentially skewing our results. The `ReplacingMergeTree` allows updates to happen, using the `ORDER BY` value to decide which rows are duplicates - that is why we have appended the `id` to `ORDER BY` statement. If a changes feed does rewind, the items will be stored but the `ReplacingMergeTree` will recognise the repeats as dupes of earlier writes and ensure there is no double-counting in queries. Eventually the older writes will be cleaned up during a Clickhouse _merge_.
+> Note: the usual database engine would be `MergeTree` but we have to remember that a Cloudant changes find may _rewind_ (it is an _at least once_ delivery, not _only once_). If this were to happen, then a `MergeTree` would store the repeated rows as duplicates, potentially skewing our results. The `ReplacingMergeTree` allows updates to happen, using the `ORDER BY` value to decide which rows are duplicates - that is why we have appended the `id` to the `ORDER BY` statement. If a changes feed does rewind, the items will be stored but the `ReplacingMergeTree` will recognise the repeats as dupes of earlier writes and ensure there is no double-counting in queries. Eventually the older writes will be cleaned up during a Clickhouse _merge_.
 
 ## Running
 
@@ -67,6 +85,8 @@ export CLOUDANT_URL="https://MYCLOUDANT.cloudant.com"
 export CLOUDANT_APIKEY="MY_API_KEY"
 # define the database that contains the data to be copied to Clickhouse       
 export CLOUDANT_DATABASE="iot"
+# define where the Clickhouse service is: defaults to 'http://127.0.0.1:8123'
+# export CLICKHOUSE_URL="https://something.clickhouse.com"
 cd couchhouse
 npm run start
 ```

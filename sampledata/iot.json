@@ -5,8 +5,8 @@
   "ts": "{{date_iso now}}",
   "temperature": {{ float -4 40 }},
   "inclination": {{ integer 0 90 }},
-  "latitude": {{ latitude }},
-  "longitude": {{ longitude }},
+  "latitude": {{ latitude LON}},
+  "longitude": {{ longitude LON}},
   "fuel": {{ integer 0 100 }},
   "status": "{{oneof in_motion stopped refuelling break }}"
 }
