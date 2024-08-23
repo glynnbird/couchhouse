@@ -1,12 +1,12 @@
 {
-  "_id": "{{kuuid}}",
-  "device_id": "{{letters 1}}{{digits 2}}",
+  "_id": "{{ kuuid }}",
+  "device_id": "{{ letters 1 }}{{ digits 2 }}",
   "type": "reading",
-  "ts": "{{date_iso now}}",
+  "ts": "{{ date_iso now }}",
   "temperature": {{ float -4 40 }},
   "inclination": {{ integer 0 90 }},
-  "latitude": {{ latitude LON}},
-  "longitude": {{ longitude LON}},
+  "latitude": {{ latitude LON }},
+  "longitude": {{ longitude LON }},
   "fuel": {{ integer 0 100 }},
-  "status": "{{oneof in_motion stopped refuelling break }}"
+  "status": "{{ oneof in_motion stopped refuelling break }}"
 }
